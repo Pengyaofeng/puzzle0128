@@ -207,6 +207,23 @@
             width: 100%;
             border-radius: 10px;
             display: block;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .waiting-message {
@@ -421,8 +438,18 @@
 
                 case 'imageUpdate':
                     imageUrl = data.imageUrl;
-                    previewImage.src = imageUrl;
+                    // 显示加载状态
                     previewContainer.style.display = 'block';
+                    previewImage.style.opacity = '0.5';
+                    previewImage.alt = '图片加载中...';
+                    // 预加载图片
+                    const tempImg = new Image();
+                    tempImg.onload = () => {
+                        previewImage.src = imageUrl;
+                        previewImage.style.opacity = '1';
+                        previewImage.alt = '参考图片';
+                    };
+                    tempImg.src = imageUrl;
                     break;
 
                 case 'puzzleUpdate':
