@@ -288,33 +288,36 @@ app.post('/upload', upload.single('image'), (req, res) => {
 });
 
 // 获取服务器地址（支持云平台和局域网）
-function getLocalIP() {
-  // 1. 优先使用手动设置的 PUBLIC_URL
-  if (process.env.PUBLIC_URL) {
-    return process.env.PUBLIC_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  }
-
-  // 2. Railway 自动提供的域名
-  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-    return process.env.RAILWAY_PUBLIC_DOMAIN;
-  }
-
-  // 3. Render 提供的域名
-  if (process.env.RENDER_SERVICE_URL) {
-    return process.env.RENDER_SERVICE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  }
-
-  // 4. 否则获取本机局域网IP
-  const interfaces = require('os').networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name]) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
-      }
+  function getLocalIP() {
+    // 优先使用手动设置的 PUBLIC_URL（云平台）
+    if (process.env.PUBLIC_URL) {
+      return process.env.PUBLIC_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
     }
+
+    // 2. Railway 自动提供的域名
+    if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+      return process.env.RAILWAY_PUBLIC_DOMAIN;
+    }
+
+    // 3. Render 提供的域名
+    if (process.env.RENDER_SERVICE_URL) {
+      return process.env.RENDER_SERVICE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    }
+
+    // 腾讯云/阿里云：直接返回公网IP（需要手动配置）
+    return '175.27.227.141';
+
+    // 4. 否则获取本机IP（会获取到内网IP）
+    // const interfaces = require('os').networkInterfaces();
+    // for (const name of Object.keys(interfaces)) {
+    //   for (const iface of interfaces[name]) {
+    //     if (iface.family === 'IPv4' && !iface.internal) {
+    //       return iface.address;
+    //     }
+    //   }
+    // }
+    // return 'localhost';
   }
-  return 'localhost';
-}
 
 // 获取协议（云平台通常是 https）
 function getProtocol() {
@@ -330,13 +333,15 @@ function getProtocol() {
 
 // 生成二维码
 app.get('/qrcode', async (req, res) => {
-  const protocol = getProtocol();
+  // 动态获取地址和协议
   const host = getLocalIP();
-  const playerUrl = `${protocol}://${host}/player.html`;
+  const protocol = getProtocol();
+  const port = process.env.PORT || 3000;
+  const playerUrl = `${protocol}://${host}:${port}/player.html`;
 
   // 调试日志
-  console.log('QRCode generation:', { protocol, host, playerUrl });
-  console.log('Railway domain:', process.env.RAILWAY_PUBLIC_DOMAIN);
+  console.log('QRCode URL:', playerUrl);
+  console.log('Host:', host, 'Protocol:', protocol);
 
   try {
     const qrCodeDataUrl = await QRCode.toDataURL(playerUrl);
