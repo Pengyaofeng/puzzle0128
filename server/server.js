@@ -307,7 +307,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
     }
 
     // 腾讯云/阿里云：直接返回公网IP（需要手动配置）
-    return '175.27.227.141';
+    return '62.234.171.198';
 
     // 4. 否则获取本机IP（会获取到内网IP）
     // const interfaces = require('os').networkInterfaces();
