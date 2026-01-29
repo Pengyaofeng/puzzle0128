@@ -320,11 +320,16 @@ app.get('/qrcode', async (req, res) => {
   const host = getLocalIP();
   const playerUrl = `${protocol}://${host}/player.html`;
 
+  // 调试日志
+  console.log('QRCode generation:', { protocol, host, playerUrl });
+  console.log('Railway domain:', process.env.RAILWAY_PUBLIC_DOMAIN);
+
   try {
     const qrCodeDataUrl = await QRCode.toDataURL(playerUrl);
     res.json({ qrCode: qrCodeDataUrl, url: playerUrl });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to generate QR code' });
+    console.error('QRCode generation error:', error);
+    res.status(500).json({ error: 'Failed to generate QR code', message: error.message });
   }
 });
 
